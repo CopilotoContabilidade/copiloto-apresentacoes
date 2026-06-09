@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapeamento de ICP — Copiloto Contabilidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0A0B;
+  --surface: #111113;
+  --surface2: #18181C;
+  --border: #242428;
+  --border2: #2E2E34;
+  --text: #F0F0F2;
+  --text-muted: #8A8A96;
+  --text-dim: #4A4A56;
+  --white: #FFFFFF;
+
+  --primary: #E8A44A;
+  --primary-dim: rgba(232,164,74,.12);
+  --primary-border: rgba(232,164,74,.25);
+
+  --green: #4AE8A0;
+  --green-dim: rgba(74,232,160,.1);
+  --blue: #4A9AE8;
+  --blue-dim: rgba(74,154,232,.1);
+  --purple: #9A7AE8;
+  --purple-dim: rgba(154,122,232,.1);
+  --red: #E84A6A;
+  --red-dim: rgba(232,74,106,.1);
+  --orange: #E87A4A;
+  --orange-dim: rgba(232,122,74,.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: .4;
+}
+
+/* Hero */
+.hero {
+  padding: 80px 0 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-left: 48px;
+  padding-right: 48px;
+  position: relative;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0; right: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(232,164,74,.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.label-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: var(--primary-dim);
+  border: 1px solid var(--primary-border);
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 28px;
+}
+
+.label-pill::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(38px, 5vw, 64px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--primary);
+}
+
+.hero p {
+  font-size: 17px;
+  color: var(--text-muted);
+  max-width: 560px;
+  line-height: 1.7;
+  font-weight: 300;
+  margin-bottom: 40px;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.hero-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-meta-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-dim);
+}
+
+.hero-meta-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Divider */
+.divider {
+  max-width: 1100px;
+  margin: 0 auto 60px;
+  padding: 0 48px;
+  border-top: 1px solid var(--border);
+}
+
+/* Section title */
+.section-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 40px;
+  line-height: 1.2;
+}
+
+/* Summary table */
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 80px;
+  font-size: 13px;
+}
+
+.summary-table thead tr {
+  border-bottom: 1px solid var(--border2);
+}
+
+.summary-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.summary-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+
+.summary-table tbody tr:hover {
+  background: var(--surface);
+}
+
+.summary-table td {
+  padding: 14px 16px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+.summary-table td:first-child {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.role-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 3px 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.role-primary { background: var(--primary-dim); color: var(--primary); border: 1px solid var(--primary-border); }
+.role-secondary { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(74,154,232,.25); }
+.role-layer { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(154,122,232,.25); }
+.role-indication { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,232,160,.25); }
+.role-opportunity { background: rgba(255,255,255,.04); color: var(--text-dim); border: 1px solid var(--border); }
+.role-discarded { background: var(--red-dim); color: var(--red); border: 1px solid rgba(232,74,106,.2); }
+.role-study { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(232,122,74,.25); }
+
+.cost-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.cost-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+/* ICP Cards */
+.icp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-bottom: 80px;
+}
+
+.icp-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 36px 40px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+
+.icp-card:hover {
+  border-color: var(--border2);
+}
+
+.icp-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--card-color, var(--primary));
+}
+
+.icp-card.full {
+  grid-column: 1 / -1;
+}
+
+.icp-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.icp-card-title-wrap {}
+
+.icp-number {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--card-color, var(--primary));
+  margin-bottom: 8px;
+  opacity: .7;
+}
+
+.icp-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.2;
+}
+
+.icp-card-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-weight: 300;
+}
+
+.icp-icon {
+  font-size: 36px;
+  flex-shrink: 0;
+  opacity: .8;
+}
+
+.icp-why {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.75;
+  margin-bottom: 28px;
+  font-weight: 300;
+  border-left: 2px solid var(--card-color, var(--primary));
+  padding-left: 16px;
+  opacity: .9;
+}
+
+.icp-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  margin-top: 24px;
+}
+
+.topics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.topic-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  transition: border-color .15s;
+}
+
+.topic-item:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+.topic-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--card-color, var(--primary));
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.channels-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.channel-tag {
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.metric-box {
+  padding: 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.metric-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--card-color, var(--primary));
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.metric-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.highlight-box {
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: var(--primary-dim);
+  border: 1px solid var(--primary-border);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-top: 20px;
+}
+
+.highlight-box.green { background: var(--green-dim); border-color: rgba(74,232,160,.2); }
+.highlight-box.blue { background: var(--blue-dim); border-color: rgba(74,154,232,.2); }
+.highlight-box.purple { background: var(--purple-dim); border-color: rgba(154,122,232,.2); }
+.highlight-box.orange { background: var(--orange-dim); border-color: rgba(232,122,74,.2); }
+
+.highlight-box strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Discarded section */
+.discarded-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-bottom: 80px;
+}
+
+.discarded-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 28px 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.discarded-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--border2);
+}
+
+.discarded-icon {
+  font-size: 28px;
+  margin-bottom: 14px;
+  opacity: .5;
+}
+
+.discarded-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.discarded-verdict {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-bottom: 12px;
+}
+
+.discarded-reason {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.65;
+  font-weight: 300;
+}
+
+.discarded-items {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.discarded-item {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.discarded-item::before {
+  content: '—';
+  flex-shrink: 0;
+  color: var(--border2);
+}
+
+/* Connection callout */
+.connection-section {
+  margin-bottom: 80px;
+}
+
+.connection-visual {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 40px;
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.connection-visual::after {
+  content: '';
+  position: absolute;
+  bottom: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(232,164,74,.04) 0%, transparent 70%);
+}
+
+.connection-flow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.connection-node {
+  padding: 16px 24px;
+  border: 1px solid;
+  text-align: center;
+  min-width: 160px;
+}
+
+.connection-node-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.connection-node-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.connection-arrow {
+  font-size: 20px;
+  color: var(--text-dim);
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+
+.connection-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.75;
+  max-width: 700px;
+  font-weight: 300;
+}
+
+/* Nav */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,10,11,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px;
+}
+
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 52px;
+  overflow-x: auto;
+}
+
+.nav-item {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: all .15s;
+  border: none;
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.nav-item:hover { color: var(--text); background: var(--surface); }
+.nav-item.active { color: var(--primary); background: var(--primary-dim); }
+
+/* Footer */
+.footer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 48px 80px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-left {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.footer-right {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate {
+  animation: fadeUp .5s ease forwards;
+  opacity: 0;
+}
+
+.delay-1 { animation-delay: .1s; }
+.delay-2 { animation-delay: .2s; }
+.delay-3 { animation-delay: .3s; }
+.delay-4 { animation-delay: .4s; }
+
+@media (max-width: 768px) {
+  .hero, .section-wrap, .divider { padding-left: 24px; padding-right: 24px; }
+  .nav { padding: 0 24px; }
+  .icp-grid { grid-template-columns: 1fr; }
+  .discarded-grid { grid-template-columns: 1fr; }
+  .topics-grid { grid-template-columns: 1fr; }
+  .metrics-row { grid-template-columns: 1fr 1fr; }
+  .icp-card.full { grid-column: 1; }
+  .connection-flow { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .connection-arrow { transform: rotate(90deg); padding: 8px 0; }
+  .footer { flex-direction: column; padding: 32px 24px 60px; }
+  .summary-table { font-size: 12px; }
+  .summary-table th, .summary-table td { padding: 10px 10px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-item active" onclick="scrollTo('hero')">Visão Geral</button>
+    <button class="nav-item" onclick="scrollTo('resumo')">Resumo</button>
+    <button class="nav-item" onclick="scrollTo('importacao')">Comércio Exterior</button>
+    <button class="nav-item" onclick="scrollTo('ecommerce')">E-commerce</button>
+    <button class="nav-item" onclick="scrollTo('construcao')">Construção Civil</button>
+    <button class="nav-item" onclick="scrollTo('criadores')">Criadores</button>
+    <button class="nav-item" onclick="scrollTo('saude')">Clínicas</button>
+    <button class="nav-item" onclick="scrollTo('liberais')">Prof. Liberais</button>
+    <button class="nav-item" onclick="scrollTo('conexao')">Conexão entre ICPs</button>
+    <button class="nav-item" onclick="scrollTo('descartados')">Descartados</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero" class="hero">
+  <div class="label-pill animate">Projeto Copiloto Contabilidade</div>
+  <h1 class="animate delay-1">Mapeamento de <em>ICP</em><br>& Nichos Estratégicos</h1>
+  <p class="animate delay-2">Análise completa dos perfis de cliente ideal para orientar a estratégia de marketing, conteúdo e aquisição da Copiloto Contabilidade. Preparado para apresentação ao time e à agência.</p>
+  <div class="hero-meta animate delay-3">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">ICPs Primários</span>
+      <span class="hero-meta-value">3 nichos</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">ICPs Secundários</span>
+      <span class="hero-meta-value">3 nichos</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Nicho a estudar</span>
+      <span class="hero-meta-value">Tecnologia / SaaS</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Segmentos avaliados</span>
+      <span class="hero-meta-value">10+</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Versão</span>
+      <span class="hero-meta-value">Março 2026</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RESUMO -->
+<section id="resumo" class="section-wrap">
+  <div class="section-label">Visão consolidada</div>
+  <div class="section-title">Mapa de posicionamento por segmento</div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Segmento</th>
+        <th>Papel estratégico</th>
+        <th>Canal principal</th>
+        <th>Ticket relativo</th>
+        <th>Custo de aquisição</th>
+        <th>Complexidade técnica</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>🌐 Comércio Exterior (importação + exportação)</td>
+        <td><span class="role-badge role-primary">ICP Primário</span></td>
+        <td>Conteúdo técnico + despachantes + AEB</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>🛒 E-commerce / Seller</td>
+        <td><span class="role-badge role-primary">ICP Primário</span></td>
+        <td>Comunidades de sellers + conteúdo</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>🏗️ Construção civil / Incorporação</td>
+        <td><span class="role-badge role-primary">ICP Primário</span></td>
+        <td>Sinduscon + advogados + conteúdo</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>🎥 Criadores de conteúdo</td>
+        <td><span class="role-badge role-secondary">ICP Secundário</span></td>
+        <td>YouTube + comunidades online</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>🏥 Clínica / Consultório próprio</td>
+        <td><span class="role-badge role-secondary">ICP Secundário</span></td>
+        <td>Conteúdo orgânico + conselhos de classe</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>👔 Profissionais liberais c/ escritório próprio</td>
+        <td><span class="role-badge role-secondary">ICP Secundário</span></td>
+        <td>Conteúdo segmentado + OAB, CAU, CREA</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>₿ Criptoativos</td>
+        <td><span class="role-badge role-layer">Camada / Diferencial</span></td>
+        <td>Conteúdo técnico + sobreposição</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>👥 PJ Genérico</td>
+        <td><span class="role-badge role-indication">Programa de indicação</span></td>
+        <td>Indicação da base atual</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>💻 Tecnologia / SaaS</td>
+        <td><span class="role-badge role-study">A estudar</span></td>
+        <td>Ecossistema de startups</td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+            <div class="cost-dot" style="background:var(--green)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--primary)"></div>
+            <div class="cost-dot" style="background:var(--border2)"></div>
+          </div>
+        </td>
+        <td>
+          <div class="cost-dots">
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+            <div class="cost-dot" style="background:var(--blue)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>🏥 Saúde (PJ médico)</td>
+        <td><span class="role-badge role-discarded">Descartado para marketing</span></td>
+        <td>Indicação espontânea</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ICP PRIMÁRIOS -->
+<section class="section-wrap">
+  <div class="section-label">Análise detalhada</div>
+  <div class="section-title">ICPs Primários — onde investir marketing ativo</div>
+
+  <div class="icp-grid">
+
+    <!-- COMÉRCIO EXTERIOR -->
+    <div id="importacao" class="icp-card full" style="--card-color: var(--primary);">
+      <div class="icp-card-header">
+        <div class="icp-card-title-wrap">
+          <div class="icp-number">ICP Primário 01</div>
+          <div class="icp-card-title">Comércio Exterior — Importação & Exportação</div>
+          <div class="icp-card-sub">Empresas que importam para revenda e/ou exportam produtos e serviços, com operação estruturada em comex</div>
+        </div>
+        <div class="icp-icon">🌐</div>
+      </div>
+
+      <p class="icp-why">
+        O operador de comércio exterior tem complexidade estrutural e recorrente por natureza — não é um evento anual, é operação contínua com obrigações que se repetem a cada embarque, despacho e fechamento de câmbio. Importação e exportação compartilham os mesmos canais de aquisição, o mesmo knowhow técnico e muitas vezes o mesmo cliente em fases diferentes do negócio. <strong>Diferencial adicional: o Rodrigo teve importadora de vinhos</strong> — ele fala do lado do empresário, não só do contador. Esse ângulo é raro e cria identificação imediata. Na exportação, dominar drawback, RECOF e isenções fiscais na saída é escasso no mercado e agrega valor mensurável.
+      </p>
+
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-value">Alto</div>
+          <div class="metric-label">Ticket médio</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value">Longo</div>
+          <div class="metric-label">LTV / relacionamento</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value">Baixo</div>
+          <div class="metric-label">CPC estimado</div>
+        </div>
+      </div>
+
+      <div class="icp-section-title">Temas de conteúdo — Importação</div>
+      <div class="topics-grid">
+        <div class="topic-item"><div class="topic-dot"></div>RADAR Receita Federal: o que é, como habilitar e como renovar</div>
+        <div class="topic-item"><div class="topic-dot"></div>NCM: como classificar corretamente e evitar autuação</div>
+        <div class="topic-item"><div class="topic-dot"></div>Simples Nacional para importadores: quando deixa de compensar</div>
+        <div class="topic-item"><div class="topic-dot"></div>Como calcular o custo real de uma importação (II, IPI, ICMS, PIS/COFINS)</div>
+        <div class="topic-item"><div class="topic-dot"></div>Licenciamento de importação (LI): quando é obrigatório e como funciona</div>
+        <div class="topic-item"><div class="topic-dot"></div>Como contabilizar custos de importação no estoque</div>
+        <div class="topic-item"><div class="topic-dot"></div>Pagamento ao fornecedor em dólar: câmbio, IOF e contabilização</div>
+        <div class="topic-item"><div class="topic-dot"></div>Pagar fornecedor em cripto (USDT): é legal? Como declarar?</div>
+        <div class="topic-item"><div class="topic-dot"></div>Erros comuns na DI que geram multa na Receita</div>
+        <div class="topic-item"><div class="topic-dot"></div>Perspectiva do empresário: o que aprendi importando vinhos</div>
+      </div>
+
+      <div class="icp-section-title">Temas de conteúdo — Exportação</div>
+      <div class="topics-grid">
+        <div class="topic-item"><div class="topic-dot"></div>Drawback: o que é e como usar para reduzir custo de produção</div>
+        <div class="topic-item"><div class="topic-dot"></div>Isenção de IPI e ICMS na exportação: como aproveitar corretamente</div>
+        <div class="topic-item"><div class="topic-dot"></div>RECOF: regime aduaneiro especial para exportadores frequentes</div>
+        <div class="topic-item"><div class="topic-dot"></div>Câmbio de exportação: contabilização e variação cambial</div>
+        <div class="topic-item"><div class="topic-dot"></div>Como emitir nota fiscal de exportação: passo a passo</div>
+        <div class="topic-item"><div class="topic-dot"></div>Exportador iniciante: por onde começar e quais obrigações assumir</div>
+      </div>
+
+      <div class="icp-section-title">Canais de aquisição</div>
+      <div class="channels-wrap">
+        <span class="channel-tag">📝 Blog / SEO orgânico</span>
+        <span class="channel-tag">🤝 Despachantes aduaneiros</span>
+        <span class="channel-tag">🏢 AEB — Associação de Comércio Exterior</span>
+        <span class="channel-tag">🏛️ Câmaras de comércio bilaterais</span>
+        <span class="channel-tag">📱 Grupos de importadores e exportadores</span>
+        <span class="channel-tag">🎤 Palestras em eventos de comex</span>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 20px;">
+        <strong>⚡ Diferencial competitivo único:</strong> Rodrigo tem vivência real como importador. O conteúdo que ele produz fala do lado do empresário — não só das obrigações fiscais, mas das decisões de negócio. Importação e exportação usam os mesmos canais e o mesmo knowhow — ampliar o escopo não aumenta o custo de aquisição, só aumenta o alcance.
+      </div>
+    </div>
+
+    <!-- ECOMMERCE -->
+    <div id="ecommerce" class="icp-card" style="--card-color: var(--green);">
+      <div class="icp-card-header">
+        <div class="icp-card-title-wrap">
+          <div class="icp-number">ICP Primário 02</div>
+          <div class="icp-card-title">E-commerce & Seller</div>
+          <div class="icp-card-sub">Vendedores em marketplaces e lojas online com operação estruturada</div>
+        </div>
+        <div class="icp-icon">🛒</div>
+      </div>
+
+      <p class="icp-why">
+        O seller de e-commerce vive online e consome conteúdo ativamente sobre o próprio negócio. A complexidade contábil é real — cada marketplace tem regra diferente, o DIFAL confunde todo mundo, e o Simples começa a apertar quando o negócio cresce. A sobreposição com importação é o grande diferencial: quem importa da China para revender online é exatamente a interseção dos dois ICPs, e a Copiloto atende os dois lados.
+      </p>
+
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--green)">Médio</div>
+          <div class="metric-label">Ticket médio</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--green)">Médio</div>
+          <div class="metric-label">LTV</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--green)">Baixo</div>
+          <div class="metric-label">CPC estimado</div>
+        </div>
+      </div>
+
+      <div class="icp-section-title">Temas de conteúdo</div>
+      <div class="topics-grid">
+        <div class="topic-item" style="--card-color: var(--green)"><div class="topic-dot" style="background: var(--green)"></div>Como conciliar vendas do Mercado Livre na contabilidade</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--green)"></div>DIFAL 2024: o que mudou e como calcular para e-commerce</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--green)"></div>Simples Nacional para e-commerce: quando deixa de compensar</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--green)"></div>Importei da China para revender: como contabilizar o custo</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--green)"></div>Devolução e troca no e-commerce: impacto fiscal e contábil</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--green)"></div>Amazon vs Shopee vs ML: diferenças tributárias para o seller</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--green)"></div>Como emitir nota fiscal de venda pelo marketplace</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--green)"></div>Estoque: CMV e controle contábil para quem vende online</div>
+      </div>
+
+      <div class="icp-section-title">Canais de aquisição</div>
+      <div class="channels-wrap">
+        <span class="channel-tag">💬 Grupos de sellers (ML, Shopee, Amazon)</span>
+        <span class="channel-tag">🎟️ Fórum E-Commerce Brasil</span>
+        <span class="channel-tag">📝 Blog / SEO orgânico</span>
+        <span class="channel-tag">▶️ YouTube (conteúdo em vídeo)</span>
+      </div>
+
+      <div class="highlight-box green" style="margin-top: 20px;">
+        <strong>🔗 Sobreposição estratégica:</strong> O seller que importa da China e vende no ML é o cliente perfeito — importação + e-commerce + potencialmente cripto para pagar fornecedor. Um único cliente que usa três especialidades da Copiloto.
+      </div>
+    </div>
+
+    <!-- CONSTRUÇÃO CIVIL -->
+    <div id="construcao" class="icp-card" style="--card-color: var(--blue);">
+      <div class="icp-card-header">
+        <div class="icp-card-title-wrap">
+          <div class="icp-number">ICP Primário 03</div>
+          <div class="icp-card-title">Construção Civil & Incorporação</div>
+          <div class="icp-card-sub">Construtoras, incorporadoras e prestadores de serviço na construção</div>
+        </div>
+        <div class="icp-icon">🏗️</div>
+      </div>
+
+      <p class="icp-why">
+        Um dos nichos mais ricos tecnicamente em contabilidade. Cada empreendimento pode ser uma empresa separada (SPE), existe um regime tributário específico para incorporação (RET), e a complexidade de reconhecimento de receita, retenções e obrigações acessórias é alta. O LTV é excelente — um incorporador com mais de uma obra representa múltiplos contratos ao longo do tempo. O canal de acesso é relacional e viável via parceiros que a Copiloto já tem mapeados.
+      </p>
+
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--blue)">Alto</div>
+          <div class="metric-label">Ticket médio</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--blue)">Muito longo</div>
+          <div class="metric-label">LTV</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--blue)">Médio</div>
+          <div class="metric-label">CPC estimado</div>
+        </div>
+      </div>
+
+      <div class="icp-section-title">Temas de conteúdo</div>
+      <div class="topics-grid">
+        <div class="topic-item"><div class="topic-dot" style="background: var(--blue)"></div>RET — Regime Especial de Tributação: quando vale a pena optar</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--blue)"></div>SPE: por que abrir uma empresa por empreendimento</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--blue)"></div>Como reconhecer receita de obra em andamento (% conclusão)</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--blue)"></div>Retenção de ISS e INSS na construção civil: quem retém?</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--blue)"></div>Contabilidade de incorporação: do lançamento à entrega das chaves</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--blue)"></div>Patrimônio de afetação: o que é e como protege incorporador e comprador</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--blue)"></div>SPED para construção civil: obrigações e prazos</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--blue)"></div>Como estruturar uma construtora que vai escalar: regime e societário</div>
+      </div>
+
+      <div class="icp-section-title">Canais de aquisição</div>
+      <div class="channels-wrap">
+        <span class="channel-tag">🏛️ Sinduscon regional</span>
+        <span class="channel-tag">⚖️ Advogados imobiliários</span>
+        <span class="channel-tag">🏠 Corretores de imóveis</span>
+        <span class="channel-tag">📝 Blog / SEO orgânico</span>
+        <span class="channel-tag">🎤 Palestras em eventos do setor</span>
+        <span class="channel-tag">🤝 Associações de incorporadores</span>
+      </div>
+
+      <div class="highlight-box blue" style="margin-top: 20px;">
+        <strong>📈 LTV excepcional:</strong> Um incorporador com 2-3 empreendimentos simultâneos representa múltiplos contratos. A cada nova obra, novas obrigações, nova SPE, novo ciclo de trabalho. O custo de aquisição se paga muitas vezes ao longo do relacionamento.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ICP SECUNDÁRIO -->
+<section class="section-wrap">
+  <div class="section-label">ICPs Secundários</div>
+  <div class="section-title">Criadores de conteúdo digital</div>
+
+  <div class="icp-grid">
+    <div id="criadores" class="icp-card full" style="--card-color: var(--purple);">
+      <div class="icp-card-header">
+        <div class="icp-card-title-wrap">
+          <div class="icp-number">ICP Secundário</div>
+          <div class="icp-card-title">Criadores de Conteúdo Digital</div>
+          <div class="icp-card-sub">Youtubers, streamers, podcasters monetizados, influenciadores e afiliados profissionais</div>
+        </div>
+        <div class="icp-icon">🎥</div>
+      </div>
+
+      <p class="icp-why">
+        A Copiloto já tem 5 clientes nesse segmento e knowhow acumulado. A dor é real e específica — AdSense internacional, diversidade de fontes de renda, sazonalidade extrema, nota fiscal de patrocínio. O ticket é menor que os ICPs primários e a volatilidade do negócio do criador é maior, mas o custo de entrada é baixíssimo e o canal de marketing orgânico é excepcionalmente eficiente: o público vive online, consome conteúdo sobre o próprio negócio, e o YouTube é o canal ideal para falar com quem faz YouTube.
+      </p>
+
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--purple)">Baixo-médio</div>
+          <div class="metric-label">Ticket médio</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--purple)">Variável</div>
+          <div class="metric-label">LTV (volátil)</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: var(--purple)">Muito baixo</div>
+          <div class="metric-label">Custo de aquisição</div>
+        </div>
+      </div>
+
+      <div class="icp-section-title">Temas de conteúdo</div>
+      <div class="topics-grid">
+        <div class="topic-item"><div class="topic-dot" style="background: var(--purple)"></div>AdSense: como funciona a retenção americana e o formulário W-8BEN</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--purple)"></div>Qual regime tributário para criador de conteúdo em 2024</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--purple)"></div>Como emitir nota fiscal de patrocínio de marca</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--purple)"></div>Afiliado Amazon / Hotmart: como declarar comissão no IR</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--purple)"></div>Super Chat e memberships do YouTube: como contabilizar</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--purple)"></div>Payoneer e recebimento internacional: o que declarar</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--purple)"></div>Quanto ganho pra valer a pena abrir um CNPJ como criador?</div>
+        <div class="topic-item"><div class="topic-dot" style="background: var(--purple)"></div>Renda irregular: como planejar pró-labore e retiradas</div>
+      </div>
+
+      <div class="icp-section-title">Canais de aquisição</div>
+      <div class="channels-wrap">
+        <span class="channel-tag">▶️ YouTube (conteúdo em vídeo — canal ideal)</span>
+        <span class="channel-tag">💬 Discord e grupos de criadores</span>
+        <span class="channel-tag">🐦 Twitter / X (comunidade creator economy)</span>
+        <span class="channel-tag">📝 Blog / SEO orgânico</span>
+      </div>
+
+      <div class="highlight-box purple" style="margin-top: 20px;">
+        <strong>⚠️ Ponto de atenção:</strong> Para esse nicho funcionar em vídeo, alguém do time precisa gravar. Sem vídeo, o canal mais eficiente para esse público fica fechado. A decisão de quem aparece nas câmeras define o quanto apostar nesse segmento agora.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONEXÃO ENTRE ICPS -->
+<section id="conexao" class="section-wrap connection-section">
+  <div class="section-label">Visão sistêmica</div>
+  <div class="section-title">A cadeia que conecta os ICPs</div>
+
+  <div class="connection-visual">
+    <div class="connection-flow">
+      <div class="connection-node" style="border-color: rgba(232,164,74,.4); background: var(--primary-dim);">
+        <div class="connection-node-title" style="color: var(--primary)">🚢 Importação</div>
+        <div class="connection-node-sub">ICP Primário 01</div>
+      </div>
+      <div class="connection-arrow">→</div>
+      <div class="connection-node" style="border-color: rgba(74,232,160,.4); background: var(--green-dim);">
+        <div class="connection-node-title" style="color: var(--green)">🛒 E-commerce</div>
+        <div class="connection-node-sub">ICP Primário 02</div>
+      </div>
+      <div class="connection-arrow">→</div>
+      <div class="connection-node" style="border-color: rgba(154,122,232,.4); background: var(--purple-dim);">
+        <div class="connection-node-title" style="color: var(--purple)">₿ Cripto</div>
+        <div class="connection-node-sub">Camada adicional</div>
+      </div>
+    </div>
+
+    <p class="connection-desc">
+      Importação, e-commerce e cripto formam uma <strong>cadeia natural de sobreposição</strong>. O importador que revende online frequentemente usa stablecoins para pagar fornecedores asiáticos — são três especialidades que se sobrepõem no mesmo perfil de cliente. Um escritório que domina os três fala com esse empresário de forma completa, sem lacuna. <strong>Construção civil fica como nicho paralelo</strong> — perfil de cliente diferente, ticket alto, LTV longo — que diversifica a carteira e protege contra concentração em um único perfil.
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+      <div class="highlight-box" style="margin: 0;">
+        <strong>Cadeia digital:</strong> Importação → E-commerce → Cripto<br>
+        <span style="font-size: 12px; color: var(--text-dim); margin-top: 6px; display: block;">Mesmo cliente em estágios diferentes da jornada. Baixo CAC marginal para converter um ICP no outro.</span>
+      </div>
+      <div class="highlight-box blue" style="margin: 0;">
+        <strong>Nicho âncora:</strong> Construção Civil<br>
+        <span style="font-size: 12px; color: var(--text-dim); margin-top: 6px; display: block;">Proteção de carteira. Ticket e LTV altos compensam menor volume. Independe de tendências digitais.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CRIPTOATIVOS COMO CAMADA -->
+<section class="section-wrap" style="margin-bottom: 80px;">
+  <div class="section-label">Diferencial transversal</div>
+  <div class="section-title">Criptoativos — não é nicho, é vantagem competitiva</div>
+
+  <div class="icp-card full" style="--card-color: var(--orange); margin-bottom: 0;">
+    <div class="icp-card-header">
+      <div class="icp-card-title-wrap">
+        <div class="icp-number">Diferencial / Camada</div>
+        <div class="icp-card-title">Tributação de Criptoativos</div>
+        <div class="icp-card-sub">Diferencial de posicionamento que eleva a percepção de sofisticação do escritório</div>
+      </div>
+      <div class="icp-icon">₿</div>
+    </div>
+
+    <p class="icp-why">
+      A Copiloto tem knowhow real em cripto — inclusive operação de mineração cross-border (Brasil + Paraguai). Isso não vira nicho primário porque mineração industrial é mercado pequeno e declaração PF é serviço transacional sem recorrência. Mas posicionado como diferencial transversal, eleva a percepção do escritório inteiro: um importador que vê que a Copiloto entende de pagamento em cripto para fornecedor asiático fica mais confortável em contratar.
+    </p>
+
+    <div class="icp-section-title">Como aplicar como camada</div>
+    <div class="topics-grid">
+      <div class="topic-item"><div class="topic-dot" style="background: var(--orange)"></div>Pagar fornecedor em USDT: é legal? Qual o tratamento tributário?</div>
+      <div class="topic-item"><div class="topic-dot" style="background: var(--orange)"></div>Tributação de ganho de capital em Bitcoin: quando gera DARF</div>
+      <div class="topic-item"><div class="topic-dot" style="background: var(--orange)"></div>IN 1888: obrigação acessória de criptoativos — quem precisa declarar</div>
+      <div class="topic-item"><div class="topic-dot" style="background: var(--orange)"></div>Empresa que recebe pagamento em cripto: como contabilizar</div>
+    </div>
+
+    <div class="highlight-box orange" style="margin-top: 20px;">
+      <strong>Estratégia recomendada:</strong> Produzir 2-4 conteúdos técnicos de autoridade no tema. Listar como especialidade no site. Usar o case de mineração discretamente. O objetivo não é atrair volume de clientes cripto — é sinalizar sofisticação para os ICPs primários.
+    </div>
+  </div>
+</section>
+
+<!-- ICP SECUNDÁRIO SAÚDE -->
+<section class="section-wrap" style="margin-bottom: 80px;">
+  <div class="section-label">ICP Secundário</div>
+  <div class="section-title">Clínicas e consultórios próprios</div>
+  <div class="icp-grid">
+    <div id="saude" class="icp-card full" style="--card-color: #E84A8A;">
+      <div class="icp-card-header">
+        <div class="icp-card-title-wrap">
+          <div class="icp-number">ICP Secundário</div>
+          <div class="icp-card-title">Clínica & Consultório Próprio</div>
+          <div class="icp-card-sub">Médicos, dentistas, fisioterapeutas, psicólogos e demais profissionais de saúde com estrutura própria</div>
+        </div>
+        <div class="icp-icon">🏥</div>
+      </div>
+      <p class="icp-why">
+        Diferente do PJ médico que trabalha em hospital de terceiros, a clínica própria tem complexidade contábil real e recorrente: CNES obrigatório, alvará sanitário com renovação periódica, sociedade entre profissionais com contrato social específico, eventual Lucro Presumido quando o faturamento escala. A equipe da Copiloto já tem knowhow nessas particularidades. O único obstáculo que existia — CPC alto em Google Ads — se resolve mudando o canal de aquisição para orgânico e relacional. <strong>Ads não é o caminho para esse nicho. Conteúdo técnico e presença em conselhos de classe são.</strong>
+      </p>
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-value" style="color: #E84A8A">Médio-alto</div>
+          <div class="metric-label">Ticket médio</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: #E84A8A">Longo</div>
+          <div class="metric-label">LTV</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: #E84A8A">Proibitivo (Ads)</div>
+          <div class="metric-label">CPC — evitar paid</div>
+        </div>
+      </div>
+      <div class="icp-section-title">Temas de conteúdo para explorar</div>
+      <div class="topics-grid">
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Como abrir clínica médica: CNPJ, CNES e alvará sanitário passo a passo</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>CNES: o que é, como cadastrar e como renovar</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Vigilância sanitária para consultório: documentos e prazos</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Sociedade médica: como estruturar o contrato social corretamente</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Simples Nacional para clínica: quando deixa de compensar</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Lucro Presumido para clínica: quando migrar e quanto economizar</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Como contratar funcionário na clínica: encargos e obrigações DP</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Nota fiscal de serviço médico: quando emitir e como classificar</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Planos de saúde: como contabilizar repasses e glosas</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #E84A8A"></div>Equipamentos médicos: nota fiscal, depreciação e crédito fiscal</div>
+      </div>
+      <div class="icp-section-title">Canais de aquisição — sem Ads</div>
+      <div class="channels-wrap">
+        <span class="channel-tag">🏛️ CRM, CRO, CRF, CREFITO regionais</span>
+        <span class="channel-tag">📝 Blog / SEO cauda longa</span>
+        <span class="channel-tag">🎤 Palestras em eventos de saúde</span>
+        <span class="channel-tag">🤝 Consultores de regularização sanitária</span>
+        <span class="channel-tag">⚖️ Advogados de contratos médicos</span>
+        <span class="channel-tag">👥 Indicação dos PJs de saúde já na base</span>
+      </div>
+      <div class="highlight-box" style="margin-top: 20px; background: rgba(232,74,138,.08); border-color: rgba(232,74,138,.2);">
+        <strong>⚠️ Atenção ao perfil do cliente:</strong> O profissional de saúde que abre clínica frequentemente não tem formação em gestão. Tende a ser mais ansioso com questões tributárias e regulatórias — especialmente CNES e vigilância sanitária. A comunicação precisa ser mais didática e tranquilizadora que nos outros ICPs. Não é problema, é característica do nicho que o time precisa absorver.
+      </div>
+      <div class="highlight-box" style="margin-top: 12px; background: rgba(232,74,138,.06); border-color: rgba(232,74,138,.15);">
+        <strong>🚫 Decisão estratégica:</strong> Google Ads para esse nicho tem CPC proibitivo — a concorrência de escritórios especializados nacionais já domina o leilão. Todo o esforço de aquisição deve ser orgânico (SEO, conteúdo) e relacional (conselhos, parceiros). A agência pode apoiar em SEO e produção, mas não em campanhas pagas para saúde.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ICP SECUNDÁRIO PROFISSIONAIS LIBERAIS -->
+<section class="section-wrap" style="margin-bottom: 80px;">
+  <div class="section-label">ICP Secundário</div>
+  <div class="section-title">Profissionais liberais com escritório próprio</div>
+  <div class="icp-grid">
+    <div id="liberais" class="icp-card full" style="--card-color: #4AE8D4;">
+      <div class="icp-card-header">
+        <div class="icp-card-title-wrap">
+          <div class="icp-number">ICP Secundário</div>
+          <div class="icp-card-title">Profissionais Liberais com Escritório Próprio</div>
+          <div class="icp-card-sub">Advogados, arquitetos, engenheiros consultores, designers e demais profissionais que montaram seu próprio negócio</div>
+        </div>
+        <div class="icp-icon">👔</div>
+      </div>
+
+      <p class="icp-why">
+        A Copiloto já tem muitos clientes nesse perfil — o sinal mais confiável de que o escritório sabe atender. O profissional liberal que montou seu próprio negócio tem uma dor universal: é especialista na própria área e completamente perdido em gestão e tributação. Não é a complexidade técnica que diferencia aqui — é a comunicação na língua do profissional. "Como estruturar seu escritório de arquitetura para pagar menos imposto" ressoa imediatamente com o arquiteto, e isso converte. O canal é conteúdo técnico segmentado por categoria profissional e presença nos conselhos de classe.
+      </p>
+
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-value" style="color: #4AE8D4">Médio</div>
+          <div class="metric-label">Ticket médio</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: #4AE8D4">Longo</div>
+          <div class="metric-label">LTV</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: #4AE8D4">Baixo</div>
+          <div class="metric-label">Custo de aquisição</div>
+        </div>
+      </div>
+
+      <div class="icp-section-title">Temas de conteúdo para explorar</div>
+      <div class="topics-grid">
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Como estruturar seu escritório de advocacia: regime e societário</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Arquiteto autônomo vs. PJ: quando faz sentido abrir empresa</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Engenheiro consultor: como emitir nota fiscal de serviço corretamente</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Simples Nacional para escritórios de serviço: teto, alíquota e limitações</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Pró-labore vs. distribuição de lucros: como se remunerar pagando menos imposto</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Contratando o primeiro funcionário: encargos, eSocial e obrigações DP</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Honorários atrasados: como lançar, cobrar e o impacto no fluxo de caixa</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Sociedade entre sócios profissionais: como estruturar o contrato social</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Cresci e meu escritório mudou de patamar: quando migrar de regime</div>
+        <div class="topic-item"><div class="topic-dot" style="background: #4AE8D4"></div>Nota fiscal de projeto: como separar honorários de reembolso de despesas</div>
+      </div>
+
+      <div class="icp-section-title">Canais de aquisição</div>
+      <div class="channels-wrap">
+        <span class="channel-tag">⚖️ OAB regional (advogados)</span>
+        <span class="channel-tag">🏛️ CAU — Conselho de Arquitetura e Urbanismo</span>
+        <span class="channel-tag">⚙️ CREA regional (engenheiros)</span>
+        <span class="channel-tag">📝 Blog / SEO segmentado por categoria</span>
+        <span class="channel-tag">💼 LinkedIn (profissionais liberais estão lá)</span>
+        <span class="channel-tag">🎤 Palestras em eventos de cada categoria</span>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 20px; background: rgba(74,232,212,.08); border-color: rgba(74,232,212,.2);">
+        <strong>✅ Base sólida já existe:</strong> Muitos clientes atuais da Copiloto são profissionais liberais com escritório próprio. Isso significa que não há risco de entrar num nicho sem base — o knowhow está consolidado, faltava só comunicar com intencionalidade. O conteúdo funciona melhor quando segmentado por categoria: um post para advogado, outro para arquiteto. Cada profissional se reconhece quando vê o próprio contexto.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DESCARTADOS -->
+<section id="descartados" class="section-wrap">
+  <div class="section-label">O que ficou de fora — e por quê</div>
+  <div class="section-title">Segmentos descartados para marketing ativo</div>
+
+  <div class="discarded-grid">
+
+    <div class="discarded-card">
+      <div class="discarded-icon">👤</div>
+      <div class="discarded-title">PJ Genérico</div>
+      <div class="discarded-verdict role-badge role-indication">Indicação, não marketing</div>
+      <div class="discarded-reason">Excelente cliente operacionalmente — baixa demanda técnica, margens boas, pulveriza carteira. Mas o canal de aquisição é estruturalmente relacional. O PJ não se reconhece como "empresário que precisa de contador" — ele chega por indicação de colega de profissão ou do RH. Impossível segmentar em marketing.</div>
+      <div class="discarded-items">
+        <div class="discarded-item">Canal natural = programa de indicação da base atual</div>
+        <div class="discarded-item">Risco regulatório se houver desincentivo ao PJ</div>
+        <div class="discarded-item">Manter como segmento de recepção, não de prospecção</div>
+      </div>
+    </div>
+
+    <div class="discarded-card">
+      <div class="discarded-icon">🏥</div>
+      <div class="discarded-title">Saúde (PJ médico)</div>
+      <div class="discarded-verdict role-badge role-discarded">Indicação, não marketing</div>
+      <div class="discarded-reason">O PJ médico tem o mesmo perfil do PJ genérico — chega por indicação de colega, não responde a marketing ativo. A clínica própria foi promovida a ICP secundário com knowhow confirmado da equipe. O PJ médico fica no programa de indicação como fonte de acesso a outros profissionais de saúde que estão abrindo clínica.</div>
+      <div class="discarded-items">
+        <div class="discarded-item">PJ médico = mesmo canal do PJ genérico (indicação)</div>
+        <div class="discarded-item">Ads para saúde = CPC proibitivo, não investir</div>
+        <div class="discarded-item">PJs de saúde na base = indicadores naturais para clínicas</div>
+      </div>
+    </div>
+
+    <div class="discarded-card">
+      <div class="discarded-icon">⚖️</div>
+      <div class="discarded-title">Advocacia</div>
+      <div class="discarded-verdict role-badge role-indication">Parceiro, não alvo</div>
+      <div class="discarded-reason">Excelente cliente para ter, mas o canal de aquisição é 100% relacional. Advogado confia em advogado — e em quem advogado indicou. Sem diferencial técnico específico que justifique marketing ativo, e o acesso via Ads ou conteúdo é ineficiente para esse perfil.</div>
+      <div class="discarded-items">
+        <div class="discarded-item">Escritórios já na base = canal de indicação, não alvo</div>
+        <div class="discarded-item">Ação recomendada: parceria formal de reciprocidade</div>
+        <div class="discarded-item">Advogados imobiliários = parceiros para construção civil</div>
+      </div>
+    </div>
+
+    <div class="discarded-card">
+      <div class="discarded-icon">₿</div>
+      <div class="discarded-title">Cripto (nicho direto)</div>
+      <div class="discarded-verdict role-badge role-layer">Virou diferencial</div>
+      <div class="discarded-reason">Mineração industrial tem mercado pequeno. Declaração PF de cripto é serviço transacional sem recorrência — e concorre com plataformas especializadas. O knowhow existe e é valioso, mas o melhor uso é como camada de diferenciação sobre outros ICPs, não como nicho autônomo de marketing.</div>
+      <div class="discarded-items">
+        <div class="discarded-item">Mineração = 1-2 clientes premium de oportunidade</div>
+        <div class="discarded-item">Declaração PF = sem recorrência, sem LTV</div>
+        <div class="discarded-item">Melhor uso: 2-4 conteúdos de autoridade + listagem no site</div>
+      </div>
+    </div>
+
+    <div class="discarded-card">
+      <div class="discarded-icon">🍽️</div>
+      <div class="discarded-title">Restaurantes & Food Service</div>
+      <div class="discarded-verdict role-badge role-discarded">Margem inviável</div>
+      <div class="discarded-reason">Complexidade técnica real (CMV, Simples com sublimite, ICMS monofásico), mas o dono de restaurante opera com margens apertadíssimas e tem baixa disposição para pagar bem pelo serviço contábil. Alta mortalidade do setor gera churn involuntário elevado — o restaurante fecha, não o cliente cancela.</div>
+      <div class="discarded-items">
+        <div class="discarded-item">Margem do cliente é o problema, não a complexidade técnica</div>
+        <div class="discarded-item">Churn involuntário alto (mortalidade do setor)</div>
+        <div class="discarded-item">Atender quando chega, não prospectar ativamente</div>
+      </div>
+    </div>
+
+    <div class="discarded-card">
+      <div class="discarded-icon">🎨</div>
+      <div class="discarded-title">Serviços diversos (cauda longa)</div>
+      <div class="discarded-verdict role-badge role-opportunity">Oportunidade passiva</div>
+      <div class="discarded-reason">Designer, salão de beleza, estúdio de tatuagem, cafeteria, corretoras, arquitetos, clínica de estética, agência de marketing — sem padrão técnico diferenciado que justifique nicho. São bons clientes para ter, mas chegam por indicação e proximidade, não por marketing ativo.</div>
+      <div class="discarded-items">
+        <div class="discarded-item">Atender bem e deixar chegar — sem esforço comercial ativo</div>
+        <div class="discarded-item">Alimentam o programa de indicação com diversidade</div>
+        <div class="discarded-item">Não consumir energia do time comercial com esses perfis</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-left">
+    <strong style="color: var(--text)">Copiloto Contabilidade</strong><br>
+    Mapeamento de ICP — Março 2026
+  </div>
+  <div class="footer-right">
+    Preparado para apresentação ao Rodrigo e à agência de marketing
+  </div>
+</footer>
+
+<script>
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    const offset = 60;
+    const top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// Update active nav on scroll
+const sections = ['hero','resumo','importacao','ecommerce','construcao','criadores','saude','liberais','conexao','descartados'];
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 100) current = id;
+  });
+  document.querySelectorAll('.nav-item').forEach((btn, i) => {
+    btn.classList.toggle('active', sections[i] === current);
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copiloto Contabilidade — Apresentações</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --roxo: #472d54;
+    --ambar: #c17f3e;
+    --creme: #fdf9f5;
+    --grafite: #303030;
+    --border-ambar: rgba(193,127,62,0.3);
+  }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--roxo);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── BARRA SUPERIOR ── */
+  .topbar {
+    height: 52px;
+    background: var(--roxo);
+    border-bottom: 1px solid var(--border-ambar);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 32px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: var(--creme);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .logo em {
+    color: var(--ambar);
+    font-style: normal;
+  }
+
+  .divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(253,249,245,0.15);
+    flex-shrink: 0;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .tab {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 6px 18px;
+    color: rgba(253,249,245,0.45);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+
+  .tab:hover {
+    color: rgba(253,249,245,0.75);
+    border-color: rgba(253,249,245,0.12);
+  }
+
+  .tab.active {
+    color: var(--ambar);
+    border-color: var(--border-ambar);
+    background: rgba(193,127,62,0.1);
+  }
+
+  /* ── IFRAME ── */
+  .frame-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: none;
+    background: #fff;
+  }
+
+  iframe.active {
+    display: block;
+  }
+
+  /* ── LOADING ── */
+  .loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--roxo);
+    z-index: 5;
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+
+  .loading.hidden {
+    opacity: 0;
+  }
+
+  .loading-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ambar);
+    display: inline-block;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  .loading-dots {
+    display: flex;
+    gap: 8px;
+  }
+
+  .loading-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(253,249,245,0.35);
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.2; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Copiloto <em>Contabilidade</em></div>
+  <div class="divider"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('brandbook')">Brand Book</button>
+    <button class="tab" onclick="switchTab('icp')">Mapeamento de ICP</button>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="loading" id="loading">
+    <div class="loading-dots">
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+    </div>
+    <div class="loading-label">Carregando</div>
+  </div>
+
+  <iframe
+    id="frame-brandbook"
+    src="brandbook.html"
+    class="active"
+    onload="frameLoaded()"
+  ></iframe>
+
+  <iframe
+    id="frame-icp"
+    src=""
+    data-src="icp.html"
+  ></iframe>
+</div>
+
+<script>
+  let loaded = { brandbook: false, icp: false }
+  let current = 'brandbook'
+
+  function frameLoaded() {
+    loaded[current] = true
+    document.getElementById('loading').classList.add('hidden')
+  }
+
+  function switchTab(name) {
+    if (name === current) return
+
+    // Atualizar tabs
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', ['brandbook','icp'][i] === name)
+    })
+
+    // Mostrar loading se ainda não carregou
+    if (!loaded[name]) {
+      document.getElementById('loading').classList.remove('hidden')
+    }
+
+    // Trocar iframe visível
+    document.getElementById('frame-' + current).classList.remove('active')
+    const next = document.getElementById('frame-' + name)
+    next.classList.add('active')
+
+    // Lazy load: só carrega o src quando abre pela primeira vez
+    if (!next.src || next.src === window.location.href) {
+      next.src = next.dataset.src
+      next.onload = () => frameLoaded()
+    }
+
+    current = name
+  }
+</script>
+</body>
+</html>
