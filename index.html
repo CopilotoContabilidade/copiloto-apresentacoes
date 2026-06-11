@@ -40,6 +40,7 @@
     <button class="tab" onclick="switchTab('icp',this)">Mapeamento de ICP</button>
     <button class="tab" onclick="switchTab('intelligence',this)">Intelligence V2</button>
     <button class="tab" onclick="switchTab('declaracao',this)">Declaração de Faturamento</button>
+    <button class="tab" onclick="switchTab('monet',this)">Copiloto Intelligence</button>
   </div>
 </div>
 <div class="frame-wrap">
@@ -52,9 +53,10 @@
   <iframe id="frame-icp"          src="" data-src="icp.html"          onload="frameLoaded('icp')"></iframe>
   <iframe id="frame-intelligence" src="" data-src="intelligence.html" onload="frameLoaded('intelligence')"></iframe>
   <iframe id="frame-declaracao"   src="" data-src="declaracao.html"   onload="frameLoaded('declaracao')"></iframe>
+  <iframe id="frame-monet"       src="" data-src="https://copiloto-contabilidade.vercel.app/"       onload="frameLoaded('monet')"></iframe>
 </div>
 <script>
-  const loaded = { brandbook:false, estrategia:false, icp:false, intelligence:false, declaracao:false }
+  const loaded = { brandbook:false, estrategia:false, icp:false, intelligence:false, declaracao:false, monet:false }
   let current = 'brandbook'
   function frameLoaded(name) { loaded[name]=true; if(name===current) document.getElementById('loading').classList.add('hidden') }
   function switchTab(name,btn) {
