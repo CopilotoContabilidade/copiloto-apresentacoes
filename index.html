@@ -7,68 +7,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --roxo: #472d54;
-    --ambar: #c17f3e;
-    --creme: #fdf9f5;
-    --border-ambar: rgba(193,127,62,0.3);
-  }
-  body {
-    font-family: 'Montserrat', sans-serif;
-    background: var(--roxo);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .topbar {
-    height: 52px;
-    background: var(--roxo);
-    border-bottom: 1px solid var(--border-ambar);
-    display: flex;
-    align-items: center;
-    padding: 0 28px;
-    gap: 32px;
-    flex-shrink: 0;
-  }
-  .logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-    color: var(--creme);
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
+  :root { --roxo: #472d54; --ambar: #c17f3e; --creme: #fdf9f5; --border-ambar: rgba(193,127,62,0.3); }
+  body { font-family: 'Montserrat', sans-serif; background: var(--roxo); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 52px; background: var(--roxo); border-bottom: 1px solid var(--border-ambar); display: flex; align-items: center; padding: 0 28px; gap: 24px; flex-shrink: 0; }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--creme); letter-spacing: 0.5px; white-space: nowrap; flex-shrink: 0; }
   .logo em { color: var(--ambar); font-style: normal; }
   .divider { width: 1px; height: 20px; background: rgba(253,249,245,0.15); flex-shrink: 0; }
-  .tabs { display: flex; gap: 4px; }
-  .tab {
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    padding: 6px 18px;
-    color: rgba(253,249,245,0.45);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
-    transition: all 0.18s;
-    white-space: nowrap;
-  }
+  .tabs { display: flex; gap: 3px; }
+  .tab { background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 6px 14px; color: rgba(253,249,245,0.45); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.18s; white-space: nowrap; }
   .tab:hover { color: rgba(253,249,245,0.75); border-color: rgba(253,249,245,0.12); }
   .tab.active { color: var(--ambar); border-color: var(--border-ambar); background: rgba(193,127,62,0.1); }
   .frame-wrap { flex: 1; position: relative; overflow: hidden; }
   iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: none; background: #fff; }
   iframe.active { display: block; }
-  .loading {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 16px;
-    background: var(--roxo); z-index: 5;
-    pointer-events: none; transition: opacity 0.4s;
-  }
+  .loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; background: var(--roxo); z-index: 5; pointer-events: none; transition: opacity 0.4s; }
   .loading.hidden { opacity: 0; }
   .loading-dots { display: flex; gap: 8px; }
   .loading-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ambar); display: inline-block; animation: pulse 1.4s ease-in-out infinite; }
@@ -79,7 +31,6 @@
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <div class="logo">Copiloto <em>Contabilidade</em></div>
   <div class="divider"></div>
@@ -88,44 +39,35 @@
     <button class="tab" onclick="switchTab('estrategia',this)">Estratégia de Marca</button>
     <button class="tab" onclick="switchTab('icp',this)">Mapeamento de ICP</button>
     <button class="tab" onclick="switchTab('intelligence',this)">Intelligence V2</button>
+    <button class="tab" onclick="switchTab('declaracao',this)">Declaração de Faturamento</button>
   </div>
 </div>
-
 <div class="frame-wrap">
   <div class="loading" id="loading">
-    <div class="loading-dots">
-      <span class="loading-dot"></span>
-      <span class="loading-dot"></span>
-      <span class="loading-dot"></span>
-    </div>
+    <div class="loading-dots"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
     <div class="loading-label">Carregando</div>
   </div>
-  <iframe id="frame-brandbook"     src="brandbook.html"    class="active" onload="frameLoaded('brandbook')"></iframe>
-  <iframe id="frame-estrategia"    src=""  data-src="estrategia.html"    onload="frameLoaded('estrategia')"></iframe>
-  <iframe id="frame-icp"           src=""  data-src="icp.html"           onload="frameLoaded('icp')"></iframe>
-  <iframe id="frame-intelligence"  src=""  data-src="intelligence.html"  onload="frameLoaded('intelligence')"></iframe>
+  <iframe id="frame-brandbook"    src="brandbook.html"    class="active" onload="frameLoaded('brandbook')"></iframe>
+  <iframe id="frame-estrategia"   src="" data-src="estrategia.html"   onload="frameLoaded('estrategia')"></iframe>
+  <iframe id="frame-icp"          src="" data-src="icp.html"          onload="frameLoaded('icp')"></iframe>
+  <iframe id="frame-intelligence" src="" data-src="intelligence.html" onload="frameLoaded('intelligence')"></iframe>
+  <iframe id="frame-declaracao"   src="" data-src="declaracao.html"   onload="frameLoaded('declaracao')"></iframe>
 </div>
-
 <script>
-  const loaded = { brandbook: false, estrategia: false, icp: false, intelligence: false }
+  const loaded = { brandbook:false, estrategia:false, icp:false, intelligence:false, declaracao:false }
   let current = 'brandbook'
-
-  function frameLoaded(name) {
-    loaded[name] = true
-    if (name === current) document.getElementById('loading').classList.add('hidden')
-  }
-
-  function switchTab(name, btn) {
-    if (name === current) return
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  function frameLoaded(name) { loaded[name]=true; if(name===current) document.getElementById('loading').classList.add('hidden') }
+  function switchTab(name,btn) {
+    if(name===current) return
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
     btn.classList.add('active')
-    if (!loaded[name]) document.getElementById('loading').classList.remove('hidden')
+    if(!loaded[name]) document.getElementById('loading').classList.remove('hidden')
     else document.getElementById('loading').classList.add('hidden')
-    document.getElementById('frame-' + current).classList.remove('active')
-    const next = document.getElementById('frame-' + name)
+    document.getElementById('frame-'+current).classList.remove('active')
+    const next=document.getElementById('frame-'+name)
     next.classList.add('active')
-    if (!next.src || next.src === window.location.href) next.src = next.dataset.src
-    current = name
+    if(!next.src||next.src===window.location.href) next.src=next.dataset.src
+    current=name
   }
 </script>
 </body>
