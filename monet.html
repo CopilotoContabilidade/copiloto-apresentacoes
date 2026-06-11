@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copiloto Contabilidade — Clientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600;700&family=Mr+Bedfort&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --roxo: #472d54; --roxo-escuro: #2a1a36; --roxo-light: rgba(71,45,84,0.06);
+  --ambar: #c17f3e; --ambar-light: rgba(193,127,62,0.10);
+  --mauve: #b24a4a; --mauve-light: rgba(178,74,74,0.08);
+  --verde: #2d7a4f; --verde-light: rgba(45,122,79,0.10);
+  --creme: #fdf9f5; --creme-escuro: #ede8df;
+  --grafite: #303030; --grafite-mid: #555; --grafite-light: #888;
+  --border: rgba(71,45,84,0.10);
+}
+body { background: var(--creme); color: var(--grafite); font-family: 'Montserrat', sans-serif; min-height: 100vh; }
+
+/* HEADER */
+.header { background: var(--roxo); padding: 0 32px; display: flex; align-items: center; gap: 24px; height: 58px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(42,26,54,0.25); border-bottom: 1px solid rgba(193,127,62,0.2); }
+.logo { font-family: 'Mr Bedfort', cursive; font-size: 32px; color: var(--creme); letter-spacing: 2px; line-height: 1; flex-shrink: 0; }
+.nav-tabs { display: flex; gap: 2px; }
+.nav-tab { background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 6px 16px; color: rgba(253,249,245,0.5); font-size: 10px; font-weight: 700; cursor: pointer; letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Montserrat', sans-serif; }
+.nav-tab.active { color: var(--ambar); border-color: rgba(193,127,62,0.3); background: var(--ambar-light); }
+.header-stats { margin-left: auto; display: flex; gap: 20px; align-items: center; }
+.stat { text-align: right; }
+.stat-val { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--ambar); font-weight: 500; line-height: 1; }
+.stat-label { font-size: 8px; color: rgba(253,249,245,0.4); text-transform: uppercase; letter-spacing: 0.12em; }
+
+/* FILTROS */
+.filters { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 58px; z-index: 99; }
+.search-wrap { padding: 12px 24px 0; }
+.search-input { width: 100%; background: var(--creme); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 16px; color: var(--grafite); font-size: 12px; outline: none; font-family: 'Montserrat', sans-serif; transition: border-color .2s; }
+.search-input:focus { border-color: var(--ambar); }
+.filter-row { padding: 10px 24px; display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-label { font-size: 8px; font-weight: 700; color: var(--grafite-light); text-transform: uppercase; letter-spacing: 0.1em; }
+.filter-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.fbtn { padding: 5px 12px; border-radius: 20px; font-size: 10px; cursor: pointer; background: transparent; color: var(--grafite-mid); font-weight: 400; border: 1px solid var(--border); transition: all .15s; font-family: 'Montserrat', sans-serif; }
+.fbtn.active { background: var(--roxo); color: var(--creme); font-weight: 700; border-color: var(--roxo); }
+.filter-info { padding: 0 24px 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 11px; color: var(--grafite-light); }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--roxo-light); border: 1px solid var(--border); color: var(--roxo); }
+.chip button { background: none; border: none; cursor: pointer; color: var(--roxo); font-size: 12px; line-height: 1; padding: 0; }
+.clear-btn { background: none; border: none; cursor: pointer; font-size: 10px; color: var(--mauve); font-weight: 700; padding: 4px 8px; font-family: 'Montserrat', sans-serif; }
+
+/* TABELA */
+table { width: 100%; border-collapse: collapse; }
+thead tr { border-bottom: 2px solid var(--border); background: var(--creme); }
+th { padding: 10px 14px; text-align: left; font-size: 8px; color: var(--grafite-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; font-family: 'Montserrat', sans-serif; cursor: pointer; user-select: none; white-space: nowrap; }
+th.active { color: var(--ambar); }
+tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s; }
+tbody tr:hover { background: var(--roxo-light); }
+td { padding: 10px 14px; vertical-align: middle; }
+
+.emp-nome { font-size: 12px; font-weight: 600; color: var(--grafite); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+.emp-razao { font-size: 10px; color: var(--grafite-light); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; margin-top: 1px; }
+.emp-cnpj { font-size: 10px; color: var(--grafite-light); font-family: monospace; margin-top: 1px; }
+
+.trib-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; color: var(--grafite-mid); background: var(--creme-escuro); border: 1px solid var(--border); }
+.status-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.status-ativa { color: var(--verde); background: var(--verde-light); border: 1px solid rgba(45,122,79,0.2); }
+.status-sm { color: var(--mauve); background: var(--mauve-light); border: 1px solid rgba(178,74,74,0.2); }
+
+.resp-cell { display: flex; flex-direction: column; gap: 3px; }
+.resp-row { display: flex; align-items: center; gap: 6px; }
+.monogram { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--roxo-light); border: 1px solid var(--border); font-size: 9px; font-weight: 700; color: var(--roxo); flex-shrink: 0; }
+.resp-nome { font-size: 11px; color: var(--grafite); }
+.resp-vazio { font-size: 11px; color: var(--mauve); font-style: italic; }
+.dots { display: flex; gap: 3px; align-items: center; }
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.chevron { opacity: 0; color: var(--grafite-light); font-size: 14px; transition: opacity .12s; }
+tbody tr:hover .chevron { opacity: 1; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(42,26,54,0.75); backdrop-filter: blur(6px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--creme); border-radius: 16px; width: 100%; max-width: 880px; max-height: 92vh; overflow-y: auto; box-shadow: 0 32px 80px rgba(42,26,54,0.35); border: 1px solid var(--border); }
+.modal-header { background: var(--roxo); padding: 24px 32px; border-radius: 16px 16px 0 0; position: sticky; top: 0; z-index: 1; }
+.modal-nome { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--creme); font-weight: 500; margin-bottom: 4px; line-height: 1.2; }
+.modal-fantasia { font-size: 11px; color: rgba(253,249,245,0.6); margin-bottom: 6px; font-style: italic; }
+.modal-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.modal-cnpj { font-size: 11px; color: rgba(253,249,245,0.5); font-family: monospace; }
+.modal-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.modal-close { background: rgba(253,249,245,0.1); border: none; color: var(--creme); width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+.modal-body { padding: 28px 32px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+.section-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--roxo); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.field { margin-bottom: 10px; }
+.field-label { font-size: 9px; color: var(--grafite-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+.field-val { font-size: 12px; color: var(--grafite); line-height: 1.5; }
+.field-empty { font-size: 12px; color: var(--grafite-light); font-style: italic; }
+.status-group { display: flex; flex-direction: column; gap: 4px; }
+.resp-card { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #fff; margin-bottom: 10px; }
+.resp-card.missing { background: var(--mauve-light); border-color: rgba(178,74,74,0.3); }
+.resp-card-label { font-size: 9px; color: var(--grafite-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.resp-card.missing .resp-card-label { color: var(--mauve); font-weight: 700; }
+.cnae-principal { background: var(--ambar-light); border: 1px solid rgba(193,127,62,0.25); border-left: 3px solid var(--ambar); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
+.cnae-principal-tag { font-size: 9px; font-weight: 700; background: var(--ambar); color: #fff; padding: 1px 6px; border-radius: 3px; letter-spacing: 0.06em; }
+.cnae-codigo { font-size: 10px; color: var(--ambar); font-family: monospace; }
+.cnae-desc { font-size: 11px; color: var(--grafite); line-height: 1.5; margin-top: 4px; }
+.cnae-sec { background: var(--creme-escuro); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 4px; }
+.socio-card { background: var(--creme-escuro); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
+.socio-nome { font-size: 12px; font-weight: 700; color: var(--grafite); margin-bottom: 8px; }
+.socio-field { font-size: 10px; color: var(--grafite-light); margin-bottom: 3px; }
+.socio-field span { color: var(--grafite-mid); font-weight: 600; }
+.dots-label { font-size: 9px; margin-left: 4px; }
+
+.empty { text-align: center; padding: 60px 20px; font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; color: var(--grafite-light); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Monet</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active">Clientes</button>
+    <button class="nav-tab" onclick="alert('Módulo disponível na versão completa do sistema.')">Estrutura</button>
+    <button class="nav-tab" onclick="alert('Módulo disponível na versão completa do sistema.')">Inteligência IA</button>
+  </div>
+  <div class="header-stats">
+    <div class="stat"><div class="stat-val" id="total-stat">10</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-val" id="ativas-stat">10</div><div class="stat-label">Ativas</div></div>
+    <div class="stat" id="filtradas-stat-wrap" style="display:none"><div class="stat-val" id="filtradas-stat">0</div><div class="stat-label">Filtradas</div></div>
+  </div>
+</div>
+
+<div class="filters">
+  <div class="search-wrap">
+    <input class="search-input" id="busca" placeholder="Buscar por empresa, CNPJ, CNAE, sócio, cidade..." oninput="aplicarFiltros()">
+  </div>
+  <div class="filter-row">
+    <div class="filter-group">
+      <div class="filter-label">Tributação</div>
+      <div class="filter-btns" id="filter-trib"></div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Status</div>
+      <div class="filter-btns">
+        <button class="fbtn" id="fbtn-ativa" onclick="toggleStatus('ATIVA')">Ativa</button>
+        <button class="fbtn" id="fbtn-sm" onclick="toggleStatus('SEM MOVIMENTO')">Sem movimento</button>
+      </div>
+    </div>
+    <div class="filter-group" style="flex:1">
+      <div class="filter-label">Responsável</div>
+      <div class="filter-btns" id="filter-resp"></div>
+    </div>
+  </div>
+  <div class="filter-info" id="filter-info">
+    <span>Mostrando <strong id="count-label">10</strong> de 10 empresas</span>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th onclick="ordenarPor('empresa')" id="th-empresa">Empresa <span>↑</span></th>
+      <th onclick="ordenarPor('tributacao')" id="th-tributacao">Tributação <span style="opacity:.3">↕</span></th>
+      <th onclick="ordenarPor('resp_fiscal')" id="th-resp_fiscal">Fiscal <span style="opacity:.3">↕</span></th>
+      <th onclick="ordenarPor('resp_dp')" id="th-resp_dp">DP <span style="opacity:.3">↕</span></th>
+      <th onclick="ordenarPor('resp_contabil')" id="th-resp_contabil">Contábil <span style="opacity:.3">↕</span></th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+<div id="empty-msg" class="empty" style="display:none">Nenhuma empresa encontrada.</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="fecharModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="modal-nome" id="m-nome"></div>
+          <div class="modal-fantasia" id="m-fantasia"></div>
+          <div class="modal-tags" id="m-tags"></div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const CLIENTES = [{"id": 1, "empresa": "OdontoVita Clínica", "razao_social": "ODONTOVITA CLÍNICA ODONTOLÓGICA LTDA", "cnpj": "12.345.678/0001-90", "tributacao": "PRESUMIDO", "atividade": "SERVIÇO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "ATIVA", "resp_fiscal": "Michael", "resp_dp": "Carol", "resp_contabil": "Josiel", "complexidade_fiscal": 3, "complexidade_dp": 2, "complexidade_contabil": 3, "natureza_juridica": "Sociedade Empresária Limitada", "porte": "PEQUENO PORTE", "capital_social": 50000, "data_abertura": "2018-03-15", "logradouro": "Rua das Orquídeas", "numero_endereco": "142", "complemento": "Sala 301", "bairro": "Botafogo", "cidade": "Rio de Janeiro", "uf": "RJ", "cep": "22250-040", "telefone1": "21991234567", "email_receita": "financeiro@odontovita.com.br", "optante_simples": "Não", "optante_mei": "Não", "nome_fantasia": "OdontoVita", "cnaes": [{"codigo": "8630-5/04", "descricao": "Atividade odontológica", "principal": true}], "socios": [{"nome": "RENATO CARVALHO SILVA", "qualificacao": "Sócio-Administrador", "tipo": "Pessoa Física", "data_entrada": "2018-03-15", "faixa_etaria": "41 a 50 anos"}]}, {"id": 2, "empresa": "Clínica São Lucas", "razao_social": "CLÍNICA SÃO LUCAS MEDICINA INTEGRADA LTDA", "cnpj": "23.456.789/0001-01", "tributacao": "SIMPLES", "atividade": "SERVIÇO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "ATIVA", "resp_fiscal": "Rosemeri", "resp_dp": "Clarissa", "resp_contabil": "Letícia", "complexidade_fiscal": 2, "complexidade_dp": 2, "complexidade_contabil": 2, "natureza_juridica": "Sociedade Empresária Limitada", "porte": "MICRO EMPRESA", "capital_social": 30000, "data_abertura": "2019-06-01", "logradouro": "Av. Nilo Peçanha", "numero_endereco": "50", "complemento": "Cobertura", "bairro": "Centro", "cidade": "Niterói", "uf": "RJ", "cep": "24020-005", "telefone1": "21988887766", "email_receita": "contato@clinicasaolucas.com.br", "optante_simples": "Sim", "optante_mei": "Não", "nome_fantasia": "São Lucas", "cnaes": [{"codigo": "8630-5/01", "descricao": "Atividade médica ambulatorial com recursos para realização de exames complementares", "principal": true}], "socios": [{"nome": "ANA PAULA MENDONÇA", "qualificacao": "Sócia-Administradora", "tipo": "Pessoa Física", "data_entrada": "2019-06-01", "faixa_etaria": "31 a 40 anos"}, {"nome": "CARLOS MENDONÇA", "qualificacao": "Sócio", "tipo": "Pessoa Física", "data_entrada": "2019-06-01", "faixa_etaria": "41 a 50 anos"}]}, {"id": 3, "empresa": "E-Store Digital", "razao_social": "E-STORE DIGITAL COMÉRCIO ELETRÔNICO LTDA", "cnpj": "34.567.890/0001-12", "tributacao": "PRESUMIDO", "atividade": "COMÉRCIO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "ATIVA", "resp_fiscal": "Michael", "resp_dp": "Carol", "resp_contabil": "Ronaldo", "complexidade_fiscal": 2, "complexidade_dp": 1, "complexidade_contabil": 2, "natureza_juridica": "Sociedade Empresária Limitada", "porte": "PEQUENO PORTE", "capital_social": 100000, "data_abertura": "2022-08-10", "logradouro": "Rua da Assembleia", "numero_endereco": "10", "complemento": "Sala 1204", "bairro": "Centro", "cidade": "Rio de Janeiro", "uf": "RJ", "cep": "20011-000", "telefone1": "21977665544", "email_receita": "financeiro@estore.com.br", "optante_simples": "Não", "optante_mei": "Não", "nome_fantasia": "E-Store", "cnaes": [{"codigo": "4799-0/01", "descricao": "Comércio atacadista ou varejista de produtos alimentícios em geral", "principal": true}, {"codigo": "6201-5/01", "descricao": "Desenvolvimento de programas de computador sob encomenda", "principal": false}], "socios": [{"nome": "CAMILA TORRES BRAGA", "qualificacao": "Sócia-Administradora", "tipo": "Pessoa Física", "data_entrada": "2022-08-10", "faixa_etaria": "31 a 40 anos"}]}, {"id": 4, "empresa": "Construtora Nobre", "razao_social": "CONSTRUTORA NOBRE EMPREENDIMENTOS S/A", "cnpj": "45.678.901/0001-23", "tributacao": "REAL", "atividade": "INDÚSTRIA", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "ATIVA", "resp_fiscal": "Carla", "resp_dp": "Clarissa", "resp_contabil": "Josiel", "complexidade_fiscal": 3, "complexidade_dp": 3, "complexidade_contabil": 3, "natureza_juridica": "Sociedade Anônima Fechada", "porte": "MÉDIO PORTE", "capital_social": 2000000, "data_abertura": "2018-01-05", "logradouro": "Av. Rio Branco", "numero_endereco": "156", "complemento": "Andar 12", "bairro": "Centro", "cidade": "Rio de Janeiro", "uf": "RJ", "cep": "20040-901", "telefone1": "21955443322", "email_receita": "financeiro@construtoranobre.com.br", "optante_simples": "Não", "optante_mei": "Não", "nome_fantasia": null, "cnaes": [{"codigo": "4120-4/00", "descricao": "Construção de edifícios", "principal": true}, {"codigo": "6810-2/01", "descricao": "Compra e venda de imóveis próprios", "principal": false}], "socios": [{"nome": "MARCOS NOBRE FERREIRA", "qualificacao": "Diretor Presidente", "tipo": "Pessoa Física", "data_entrada": "2018-01-05", "faixa_etaria": "51 a 60 anos"}, {"nome": "LUCIA NOBRE", "qualificacao": "Diretora Financeira", "tipo": "Pessoa Física", "data_entrada": "2018-01-05", "faixa_etaria": "51 a 60 anos"}]}, {"id": 5, "empresa": "Fit & Fresh Alimentos", "razao_social": "FIT & FRESH ALIMENTOS NATURAIS LTDA", "cnpj": "56.789.012/0001-34", "tributacao": "SIMPLES", "atividade": "COMÉRCIO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "ATIVA", "resp_fiscal": "Rosemeri", "resp_dp": "Carol", "resp_contabil": "Letícia", "complexidade_fiscal": 1, "complexidade_dp": 1, "complexidade_contabil": 1, "natureza_juridica": "Sociedade Empresária Limitada", "porte": "MICRO EMPRESA", "capital_social": 20000, "data_abertura": "2023-02-20", "logradouro": "Rua Voluntários da Pátria", "numero_endereco": "190", "complemento": null, "bairro": "Botafogo", "cidade": "Rio de Janeiro", "uf": "RJ", "cep": "22270-010", "telefone1": "21944332211", "email_receita": "contato@fitfresh.com.br", "optante_simples": "Sim", "optante_mei": "Não", "nome_fantasia": "Fit & Fresh", "cnaes": [{"codigo": "4729-6/99", "descricao": "Comércio varejista de produtos alimentícios em geral", "principal": true}], "socios": [{"nome": "RODRIGO LIMA SANTOS", "qualificacao": "Sócio-Administrador", "tipo": "Pessoa Física", "data_entrada": "2023-02-20", "faixa_etaria": "31 a 40 anos"}]}, {"id": 6, "empresa": "Hastings Consultoria", "razao_social": "HASTINGS CONSULTORIA E INFORMÁTICA LTDA", "cnpj": "67.890.123/0001-45", "tributacao": "REAL", "atividade": "SERVIÇO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "ATIVA", "resp_fiscal": "Carla", "resp_dp": "Clarissa", "resp_contabil": "Josiel", "complexidade_fiscal": 3, "complexidade_dp": 2, "complexidade_contabil": 3, "natureza_juridica": "Sociedade Empresária Limitada", "porte": "MÉDIO PORTE", "capital_social": 500000, "data_abertura": "2017-11-08", "logradouro": "Av. Presidente Vargas", "numero_endereco": "435", "complemento": "Sala 802", "bairro": "Centro", "cidade": "Rio de Janeiro", "uf": "RJ", "cep": "20071-003", "telefone1": "21933221100", "email_receita": "financeiro@hastings.com.br", "optante_simples": "Não", "optante_mei": "Não", "nome_fantasia": null, "cnaes": [{"codigo": "6201-5/01", "descricao": "Desenvolvimento de programas de computador sob encomenda", "principal": true}, {"codigo": "6204-0/00", "descricao": "Consultoria em tecnologia da informação", "principal": false}], "socios": [{"nome": "PATRICIA HASTINGS", "qualificacao": "Sócia-Administradora", "tipo": "Pessoa Física", "data_entrada": "2017-11-08", "faixa_etaria": "41 a 50 anos"}, {"nome": "JOHN HASTINGS", "qualificacao": "Sócio", "tipo": "Pessoa Física", "data_entrada": "2017-11-08", "faixa_etaria": "41 a 50 anos"}]}, {"id": 7, "empresa": "Studio Forma", "razao_social": "STUDIO FORMA ACADEMIA LTDA", "cnpj": "78.901.234/0001-56", "tributacao": "SIMPLES", "atividade": "SERVIÇO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "SEM MOVIMENTO", "resp_fiscal": "Michael", "resp_dp": null, "resp_contabil": "Ronaldo", "complexidade_fiscal": 1, "complexidade_dp": null, "complexidade_contabil": 1, "natureza_juridica": "Sociedade Empresária Limitada", "porte": "MICRO EMPRESA", "capital_social": 15000, "data_abertura": "2024-05-03", "logradouro": "Rua Icaraí", "numero_endereco": "78", "complemento": null, "bairro": "Icaraí", "cidade": "Niterói", "uf": "RJ", "cep": "24220-000", "telefone1": "21922110099", "email_receita": "studioforma@gmail.com", "optante_simples": "Sim", "optante_mei": "Não", "nome_fantasia": "Studio Forma", "cnaes": [{"codigo": "9313-1/00", "descricao": "Atividades de condicionamento físico", "principal": true}], "socios": [{"nome": "FERNANDA COSTA RAMOS", "qualificacao": "Sócia-Administradora", "tipo": "Pessoa Física", "data_entrada": "2024-05-03", "faixa_etaria": "31 a 40 anos"}]}, {"id": 8, "empresa": "Conecttec Sistemas", "razao_social": "CONECTTEC SISTEMAS DE INFORMAÇÃO LTDA", "cnpj": "89.012.345/0001-67", "tributacao": "REAL", "atividade": "SERVIÇO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "ATIVA", "resp_fiscal": "Rosemeri", "resp_dp": "Carol", "resp_contabil": "Alessandra", "complexidade_fiscal": 2, "complexidade_dp": 2, "complexidade_contabil": 2, "natureza_juridica": "Sociedade Empresária Limitada", "porte": "PEQUENO PORTE", "capital_social": 200000, "data_abertura": "2020-07-14", "logradouro": "Alameda Rio Negro", "numero_endereco": "503", "complemento": "Conj 141", "bairro": "Alphaville", "cidade": "Barueri", "uf": "SP", "cep": "06454-000", "telefone1": "11988776655", "email_receita": "financeiro@conecttec.com.br", "optante_simples": "Não", "optante_mei": "Não", "nome_fantasia": null, "cnaes": [{"codigo": "6201-5/01", "descricao": "Desenvolvimento de programas de computador sob encomenda", "principal": true}], "socios": [{"nome": "THIAGO PEREIRA ALVES", "qualificacao": "Sócio-Administrador", "tipo": "Pessoa Física", "data_entrada": "2020-07-14", "faixa_etaria": "31 a 40 anos"}]}, {"id": 9, "empresa": "Grupo Madeira Real", "razao_social": "GRUPO MADEIRA REAL COMÉRCIO DE MÓVEIS LTDA", "cnpj": "90.123.456/0001-78", "tributacao": "PRESUMIDO", "atividade": "COMÉRCIO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "ATIVA", "resp_fiscal": "Carla", "resp_dp": "Clarissa", "resp_contabil": "Josiel", "complexidade_fiscal": 2, "complexidade_dp": 2, "complexidade_contabil": 2, "natureza_juridica": "Sociedade Empresária Limitada", "porte": "PEQUENO PORTE", "capital_social": 120000, "data_abertura": "2016-09-22", "logradouro": "Av. Brasil", "numero_endereco": "8800", "complemento": null, "bairro": "Deodoro", "cidade": "Rio de Janeiro", "uf": "RJ", "cep": "21710-000", "telefone1": "21911009988", "email_receita": "comercial@madeirareal.com.br", "optante_simples": "Não", "optante_mei": "Não", "nome_fantasia": "Madeira Real", "cnaes": [{"codigo": "4754-7/01", "descricao": "Comércio varejista de móveis", "principal": true}], "socios": [{"nome": "ANTONIO SILVEIRA", "qualificacao": "Sócio-Administrador", "tipo": "Pessoa Física", "data_entrada": "2016-09-22", "faixa_etaria": "51 a 60 anos"}, {"nome": "MARIA SILVEIRA", "qualificacao": "Sócia", "tipo": "Pessoa Física", "data_entrada": "2016-09-22", "faixa_etaria": "51 a 60 anos"}]}, {"id": 10, "empresa": "Dr. Paulo Mendes", "razao_social": "PAULO MENDES CARVALHO MEDICINA LTDA", "cnpj": "01.234.567/0001-89", "tributacao": "SIMPLES", "atividade": "SERVIÇO", "situacao_cadastral": "Ativa", "status_fiscal": "ATIVA", "status_contabil": "ATIVA", "status_dp": "SEM MOVIMENTO", "resp_fiscal": "Michael", "resp_dp": null, "resp_contabil": "Ronaldo", "complexidade_fiscal": 1, "complexidade_dp": null, "complexidade_contabil": 1, "natureza_juridica": "Sociedade Unipessoal Limitada", "porte": "MICRO EMPRESA", "capital_social": 10000, "data_abertura": "2023-10-01", "logradouro": "Rua Visconde de Pirajá", "numero_endereco": "330", "complemento": "Sala 1002", "bairro": "Ipanema", "cidade": "Rio de Janeiro", "uf": "RJ", "cep": "22410-002", "telefone1": "21900998877", "email_receita": "drpaulomendes@gmail.com", "optante_simples": "Sim", "optante_mei": "Não", "nome_fantasia": null, "cnaes": [{"codigo": "8630-5/01", "descricao": "Atividade médica ambulatorial", "principal": true}], "socios": [{"nome": "PAULO MENDES CARVALHO", "qualificacao": "Titular", "tipo": "Pessoa Física", "data_entrada": "2023-10-01", "faixa_etaria": "41 a 50 anos"}]}];
+
+// Estado
+let filtroTrib = [];
+let filtroResp = [];
+let filtroStatus = '';
+let ordenacao = { campo: 'empresa', dir: 'asc' };
+let filtrados = [...CLIENTES];
+
+// Helpers
+function capFirst(s) { if (!s) return null; return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
+function normalizeResp(s) { if (!s) return null; s = s.trim(); if (['nan','NAN','NINGUÉM','null','undefined','—','-',''].includes(s)) return null; if (s.toUpperCase() === 'LETICIA' || s.toUpperCase() === 'LETÍCIA') return 'Letícia'; return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
+function fmtData(d) { if (!d) return null; try { const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; } catch { return d; } }
+function fmtTel(t) { if (!t) return null; const n=t.replace(/\D/g,''); if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; return t.trim()||null; }
+function fmtCep(c) { if (!c) return null; const n=c.replace(/\D/g,''); if(n.length===8) return `${n.slice(0,5)}-${n.slice(5)}`; return c; }
+function fmtMoeda(v) { if (!v) return null; return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v); }
+function statusGeral(c) { if (c.situacao_cadastral==='Ativa'||c.status_fiscal==='ATIVA'||c.status_contabil==='ATIVA'||c.status_dp==='ATIVA') return 'ATIVA'; return 'SEM MOVIMENTO'; }
+function initials(name) { const n=normalizeResp(name); if(!n) return '?'; return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+function dotColor(v) { if(v>=3) return '#b24a4a'; if(v>=2) return '#c17f3e'; return '#2d7a4f'; }
+
+function monogramHtml(name) {
+  const n = normalizeResp(name);
+  if (!n) return '<span class="monogram">?</span>';
+  return `<span class="monogram">${initials(name)}</span>`;
+}
+function dotsHtml(v) {
+  if (v===null||v===undefined) return '<span style="color:var(--grafite-light);font-size:10px">—</span>';
+  return [1,2,3].map(i=>`<span class="dot" style="background:${i<=v?dotColor(v):'var(--creme-escuro)'}"></span>`).join('');
+}
+function respCellHtml(name, comp) {
+  const n = normalizeResp(name);
+  if (!n) return `<div class="resp-cell"><div class="resp-row">${monogramHtml(null)}<span class="resp-vazio">Não atribuído</span></div><div class="dots">${dotsHtml(comp)}</div></div>`;
+  return `<div class="resp-cell"><div class="resp-row">${monogramHtml(name)}<span class="resp-nome">${n}</span></div><div class="dots">${dotsHtml(comp)}</div></div>`;
+}
+function statusBadgeHtml(v) {
+  if (!v) return '<span class="field-empty">—</span>';
+  const isOk = v==='Ativa'||v==='ATIVA';
+  const cls = isOk?'status-ativa':'status-sm';
+  const label = v==='ATIVA'?'Ativa':v==='SEM MOVIMENTO'?'Sem movimento':v;
+  return `<span class="status-badge ${cls}">${label}</span>`;
+}
+function tribBadgeHtml(v) {
+  if (!v) return '<span class="field-empty">—</span>';
+  return `<span class="trib-badge">${v.charAt(0)+v.slice(1).toLowerCase()}</span>`;
+}
+
+// Setup filtros
+function setupFiltros() {
+  // Tributação
+  const tribs = [...new Set(CLIENTES.map(c=>c.tributacao).filter(Boolean))].sort();
+  document.getElementById('filter-trib').innerHTML = tribs.map(t=>
+    `<button class="fbtn" id="ftrib-${t}" onclick="toggleTrib('${t}')">${t.charAt(0)+t.slice(1).toLowerCase()}</button>`
+  ).join('');
+  // Responsável
+  const resps = [...new Set(CLIENTES.flatMap(c=>[c.resp_fiscal,c.resp_dp,c.resp_contabil].map(normalizeResp).filter(Boolean)))].sort();
+  document.getElementById('filter-resp').innerHTML = resps.map(r=>
+    `<button class="fbtn" id="fresp-${r.replace(/\s/g,'_')}" onclick="toggleResp('${r}')">${r}</button>`
+  ).join('');
+}
+
+function toggleTrib(t) { filtroTrib = filtroTrib.includes(t)?filtroTrib.filter(x=>x!==t):[...filtroTrib,t]; aplicarFiltros(); }
+function toggleResp(r) { filtroResp = filtroResp.includes(r)?filtroResp.filter(x=>x!==r):[...filtroResp,r]; aplicarFiltros(); }
+function toggleStatus(s) { filtroStatus = filtroStatus===s?'':s; aplicarFiltros(); }
+
+function aplicarFiltros() {
+  const q = document.getElementById('busca').value.toLowerCase();
+  let r = [...CLIENTES];
+  if (q) r = r.filter(c =>
+    c.empresa?.toLowerCase().includes(q) || c.cnpj?.includes(q) ||
+    c.razao_social?.toLowerCase().includes(q) || c.cidade?.toLowerCase().includes(q) ||
+    c.cnaes?.some(cn=>cn.descricao?.toLowerCase().includes(q)||cn.codigo?.includes(q)) ||
+    c.socios?.some(s=>s.nome?.toLowerCase().includes(q))
+  );
+  if (filtroTrib.length) r = r.filter(c=>filtroTrib.includes(c.tributacao));
+  if (filtroResp.length) r = r.filter(c=>[c.resp_fiscal,c.resp_dp,c.resp_contabil].some(rsp=>filtroResp.includes(normalizeResp(rsp))));
+  if (filtroStatus) {
+    if (filtroStatus==='ATIVA') r=r.filter(c=>c.situacao_cadastral==='Ativa'||c.status_fiscal==='ATIVA');
+    else r=r.filter(c=>statusGeral(c)==='SEM MOVIMENTO');
+  }
+  // Ordenação
+  r.sort((a,b)=>{
+    const va=(a[ordenacao.campo]||''), vb=(b[ordenacao.campo]||'');
+    const cmp=String(va).localeCompare(String(vb),'pt-BR');
+    return ordenacao.dir==='asc'?cmp:-cmp;
+  });
+  filtrados = r;
+
+  // Update UI dos botões
+  document.querySelectorAll('[id^="ftrib-"]').forEach(btn=>btn.classList.remove('active'));
+  filtroTrib.forEach(t=>{ const el=document.getElementById(`ftrib-${t}`); if(el) el.classList.add('active'); });
+  document.querySelectorAll('[id^="fresp-"]').forEach(btn=>btn.classList.remove('active'));
+  filtroResp.forEach(r=>{ const el=document.getElementById(`fresp-${r.replace(/\s/g,'_')}`); if(el) el.classList.add('active'); });
+  document.getElementById('fbtn-ativa').classList.toggle('active', filtroStatus==='ATIVA');
+  document.getElementById('fbtn-sm').classList.toggle('active', filtroStatus==='SEM MOVIMENTO');
+
+  renderTabela();
+}
+
+function ordenarPor(campo) {
+  if (ordenacao.campo===campo) ordenacao.dir=ordenacao.dir==='asc'?'desc':'asc';
+  else { ordenacao.campo=campo; ordenacao.dir='asc'; }
+  // Update cabeçalhos
+  ['empresa','tributacao','resp_fiscal','resp_dp','resp_contabil'].forEach(c=>{
+    const el=document.getElementById(`th-${c}`);
+    if(!el) return;
+    const ativo=ordenacao.campo===c;
+    el.style.color=ativo?'var(--ambar)':'var(--grafite-light)';
+    el.querySelector('span').textContent=ativo?(ordenacao.dir==='asc'?'↑':'↓'):'↕';
+    el.querySelector('span').style.opacity=ativo?'1':'0.3';
+  });
+  aplicarFiltros();
+}
+
+function renderTabela() {
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty-msg');
+  const count = document.getElementById('count-label');
+  count.textContent = filtrados.length;
+  
+  const total = CLIENTES.length;
+  document.getElementById('total-stat').textContent = total;
+  document.getElementById('ativas-stat').textContent = CLIENTES.filter(c=>statusGeral(c)==='ATIVA').length;
+  const filtWrap = document.getElementById('filtradas-stat-wrap');
+  if (filtrados.length !== total) {
+    filtWrap.style.display = '';
+    document.getElementById('filtradas-stat').textContent = filtrados.length;
+  } else { filtWrap.style.display = 'none'; }
+
+  if (filtrados.length === 0) { tbody.innerHTML=''; empty.style.display=''; return; }
+  empty.style.display='none';
+
+  tbody.innerHTML = filtrados.map(c => `
+    <tr onclick="abrirModal(${c.id})">
+      <td>
+        <div class="emp-nome">${c.empresa}</div>
+        ${c.razao_social && c.razao_social!==c.empresa ? `<div class="emp-razao">${c.razao_social}</div>` : ''}
+        <div class="emp-cnpj">${c.cnpj}</div>
+      </td>
+      <td>${tribBadgeHtml(c.tributacao)}</td>
+      <td>${respCellHtml(c.resp_fiscal, c.complexidade_fiscal)}</td>
+      <td>${respCellHtml(c.resp_dp, c.complexidade_dp)}</td>
+      <td>${respCellHtml(c.resp_contabil, c.complexidade_contabil)}</td>
+      <td>${statusBadgeHtml(statusGeral(c))}</td>
+      <td><span class="chevron">›</span></td>
+    </tr>
+  `).join('');
+}
+
+function abrirModal(id) {
+  const c = CLIENTES.find(x=>x.id===id);
+  if (!c) return;
+
+  document.getElementById('m-nome').textContent = c.razao_social || c.empresa;
+  document.getElementById('m-fantasia').textContent = c.nome_fantasia ? `"${c.nome_fantasia}"` : '';
+  document.getElementById('m-fantasia').style.display = c.nome_fantasia ? '' : 'none';
+  
+  const tags = [
+    `<span class="modal-cnpj">${c.cnpj}</span>`,
+    c.situacao_cadastral ? `<span class="modal-tag" style="color:${c.situacao_cadastral==='Ativa'?'var(--verde)':'var(--mauve)'};background:${c.situacao_cadastral==='Ativa'?'var(--verde-light)':'var(--mauve-light)'}">${c.situacao_cadastral==='Ativa'?'RF: Ativa':'RF: '+c.situacao_cadastral}</span>` : '',
+    c.optante_simples==='Sim' ? '<span class="modal-tag" style="color:var(--verde);background:var(--verde-light)">Simples Nacional</span>' : '',
+  ].filter(Boolean).join('');
+  document.getElementById('m-tags').innerHTML = tags;
+
+  // Endereço
+  const endereco = [
+    [c.logradouro, c.numero_endereco].filter(Boolean).join(', '),
+    c.complemento,
+    c.bairro,
+    [c.cidade, c.uf].filter(Boolean).join('/'),
+    fmtCep(c.cep)
+  ].filter(Boolean).join(' — ');
+
+  // Sócios
+  const sociosHtml = !c.socios?.length ? '<span class="field-empty">Sem sócios registrados</span>' :
+    c.socios.map(s=>`
+      <div class="socio-card">
+        <div class="socio-nome">${s.nome||'—'}</div>
+        ${s.qualificacao?`<div class="socio-field"><span>Qualificação: </span>${s.qualificacao}</div>`:''}
+        ${s.tipo?`<div class="socio-field"><span>Tipo: </span>${s.tipo}</div>`:''}
+        ${s.data_entrada?`<div class="socio-field"><span>Entrada: </span>${fmtData(s.data_entrada)}</div>`:''}
+        ${s.faixa_etaria?`<div class="socio-field"><span>Faixa etária: </span>${s.faixa_etaria}</div>`:''}
+      </div>
+    `).join('');
+
+  // CNAEs
+  const principal = c.cnaes?.find(x=>x.principal);
+  const secundarios = c.cnaes?.filter(x=>!x.principal) || [];
+  const cnaesHtml = !c.cnaes?.length ? '<span class="field-empty">Sem CNAEs</span>' : `
+    ${principal?`<div class="cnae-principal"><div style="display:flex;gap:6px;align-items:center;margin-bottom:4px"><span class="cnae-principal-tag">PRINCIPAL</span><span class="cnae-codigo">${principal.codigo}</span></div><div class="cnae-desc">${principal.descricao}</div></div>`:''}
+    ${secundarios.map(cn=>`<div class="cnae-sec"><div class="cnae-codigo">${cn.codigo}</div><div class="cnae-desc" style="font-size:11px;color:var(--grafite);line-height:1.4;margin-top:2px">${cn.descricao}</div></div>`).join('')}
+  `;
+
+  // Responsáveis
+  const respHtml = ['Fiscal','DP','Contábil'].map(area=>{
+    const key = area==='DP'?'dp':area.toLowerCase();
+    const resp = c[`resp_${key}`];
+    const comp = c[`complexidade_${key}`];
+    const n = normalizeResp(resp);
+    const missing = !n;
+    return `
+      <div class="resp-card ${missing?'missing':''}">
+        <div class="resp-card-label">${area}${missing?' — Não atribuído':''}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="resp-row">${monogramHtml(resp)}<span class="${missing?'resp-vazio':'resp-nome'}">${missing?'Não atribuído':n}</span></div>
+          <div class="dots">${dotsHtml(comp)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('m-body').innerHTML = `
+    <div>
+      <div class="section-title">Dados Cadastrais</div>
+      <div class="field"><div class="field-label">Tributação</div><div class="field-val">${tribBadgeHtml(c.tributacao)}</div></div>
+      <div class="field"><div class="field-label">Natureza Jurídica</div><div class="field-val">${c.natureza_juridica||'<span class="field-empty">Não informado</span>'}</div></div>
+      <div class="field"><div class="field-label">Porte</div><div class="field-val">${c.porte||'<span class="field-empty">Não informado</span>'}</div></div>
+      <div class="field"><div class="field-label">Capital Social</div><div class="field-val">${fmtMoeda(c.capital_social)||'<span class="field-empty">Não informado</span>'}</div></div>
+      <div class="field"><div class="field-label">Data de Abertura</div><div class="field-val">${fmtData(c.data_abertura)||'<span class="field-empty">Não informado</span>'}</div></div>
+      <div class="field">
+        <div class="field-label">Status</div>
+        <div class="status-group">
+          <span>${statusBadgeHtml(c.situacao_cadastral||c.status_fiscal)} <span style="font-size:9px;color:var(--grafite-light);margin-left:4px">Fiscal</span></span>
+          <span>${statusBadgeHtml(c.status_contabil)} <span style="font-size:9px;color:var(--grafite-light);margin-left:4px">Contábil</span></span>
+          <span>${statusBadgeHtml(c.status_dp)} <span style="font-size:9px;color:var(--grafite-light);margin-left:4px">DP</span></span>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <div class="section-title">Contato</div>
+        ${c.email_receita?`<div class="field"><div class="field-label">E-mail</div><a href="mailto:${c.email_receita}" style="font-size:12px;color:var(--ambar);text-decoration:none">${c.email_receita}</a></div>`:''}
+        ${fmtTel(c.telefone1)?`<div class="field"><div class="field-label">Telefone</div><a href="tel:${c.telefone1}" style="font-size:12px;color:var(--ambar);text-decoration:none">${fmtTel(c.telefone1)}</a></div>`:''}
+        <div class="field"><div class="field-label">Endereço</div><div class="field-val" style="line-height:1.6">${endereco||'<span class="field-empty">Não informado</span>'}</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Equipe Copiloto</div>
+      ${respHtml}
+      <div style="margin-top:20px">
+        <div class="section-title">CNAEs (${c.cnaes?.length||0})</div>
+        ${cnaesHtml}
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Quadro Societário (${c.socios?.length||0})</div>
+      ${sociosHtml}
+    </div>
+  `;
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function fecharModal(e) {
+  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') document.getElementById('modal').classList.remove('open'); });
+
+// Init
+setupFiltros();
+aplicarFiltros();
+</script>
+</body>
+</html>
